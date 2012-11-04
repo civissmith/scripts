@@ -13,6 +13,12 @@
 # @Modification History: 
 #
 ###############################################################################
+# Distribution Statement:
+#    This software is free, open-source. It may be freely distributed
+#    and/or modified. It is distributed as-is with no warranties (actual
+#    or implied) and the original author is in no way responsible for 
+#    any damages, inconveniences, or interruptions it may cause.
+###############################################################################
 """
 This module will generate a pseudo-random name for images in the child
 directories of the target directory.
