@@ -58,7 +58,10 @@ if __name__ == '__main__':
                                               alphaString[2], 
                                               alphaString[3])
                   newName = "%s_%s.jpg" % ( alphaString, randomString )
-                  print( "Renaming %s to %s" % (pictures, newName))
-                  rename( pictures, newName )
+                  if not isfile(newName):
+                     print( "Renaming %s to %s" % (pictures, newName))
+                     rename( pictures, newName )
+                  else:
+                    # Try Again? -- Random name should be refactored to a function, and called through here.
             chdir( ".." ) # Return up so that we can continue
    print("Renames complete")
