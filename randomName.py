@@ -11,6 +11,7 @@
 # @Purpose: Random rename files to prevent name conflicts.
 #
 # @Modification History: 
+# 14Nov12 T. Bailey  Added catch to prevent name collisions.
 #
 ###############################################################################
 # Distribution Statement:
@@ -62,6 +63,7 @@ if __name__ == '__main__':
                      print( "Renaming %s to %s" % (pictures, newName))
                      rename( pictures, newName )
                   else:
-                    # Try Again? -- Random name should be refactored to a function, and called through here.
+                     print( "Name conflict detected, %s was not renamed!" % pictures )
+
             chdir( ".." ) # Return up so that we can continue
    print("Renames complete")
