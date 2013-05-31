@@ -56,20 +56,36 @@ while( <COMPILE> ){
    if( $outLine =~ /\s+error:/i ){
 
       ($fileInfo, $text ) = split(/\s+error:/, $outLine);
-      print color("red");
-      print "ERROR! ";
+      print color("BOLD RED");
+      print "ERROR: ";
       print color("reset");
-      print "$fileInfo "; # Contains file:line_no:
-      print "\b$text";    # Contains diagnosis info
+      ($fileName, $lineNo ) = split(/:/, $fileInfo);
+      print "File: ";
+      print color("BOLD RED");
+      print "$fileName";
+      print color("reset");
+      print ", Line: ";
+      print color("BOLD RED");
+      print "$lineNo";
+      print color("reset");
+      print " >> $text";    # Contains diagnosis info
 
    }elsif( $outLine =~ /\s+warning:/i ) {
 
       ($fileInfo, $text ) = split(/\s+warning:/, $outLine);
-      print color("yellow");
+      print color("BOLD YELLOW");
       print "WARNING: ";
       print color("reset");
-      print "$fileInfo ";
-      print "\b$text";
+      ($fileName, $lineNo ) = split(/:/, $fileInfo);
+      print "File: ";
+      print color("BOLD YELLOW");
+      print "$fileName";
+      print color("reset");
+      print ", Line: ";
+      print color("BOLD YELLOW");
+      print "$lineNo";
+      print color("reset");
+      print " >> $text";    # Contains diagnosis info
 
    }else{
 
