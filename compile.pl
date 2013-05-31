@@ -14,6 +14,7 @@
 # @Modification History: 
 # $Id: compile.pl,v 1.2 2013-05-28 16:18:53 alpha Exp $
 ###############################################################################
+require Term::ANSIColor;
 use Term::ANSIColor;
 
 #
@@ -36,32 +37,45 @@ if( $compiler ne "g++" && $compiler ne "gcc" ){
    exit(1);
 }
 
-print STDOUT "Compiling with $compiler!\n";
-#
-# Use the compiler and start parsing the output.
-#
-
 #
 # Open a file descriptor to capture the compilation output
 #
 $compilerArgs = join(" ", @ARGV );
 open( COMPILE, "$compiler $compilerArgs 2>&1 |");
-print STDOUT "$compilerArgs\n";
 while( <COMPILE> ){
    $outLine = $_;
 
    #
-   # Colorize ERROR lines.
+   # Colorize ERROR and WARNING lines.
+   #
+
+   #
+   # For ERROR and WARNING lines, split out the error level and reformat the
+   # line to make the level more prominent.
    #
    if( $outLine =~ /\s+error:/i ){
+
+      ($fileInfo, $text ) = split(/\s+error:/, $outLine);
       print color("red");
-      print $outLine;
+      print "ERROR! ";
       print color("reset");
-   }elsif( $outLine =~ /\s+warning/i ) {
+      print "$fileInfo "; # Contains file:line_no:
+      print "\b$text";    # Contains diagnosis info
+
+   }elsif( $outLine =~ /\s+warning:/i ) {
+
+      ($fileInfo, $text ) = split(/\s+warning:/, $outLine);
       print color("yellow");
-      print $outLine;
+      print "WARNING: ";
       print color("reset");
+      print "$fileInfo ";
+      print "\b$text";
+
    }else{
+
+      #
+      # Don't change any normal lines.
+      #
       print $outLine;
    }
 }
