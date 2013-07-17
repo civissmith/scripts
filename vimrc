@@ -61,12 +61,11 @@ vnoremap <F1> <ESC>
 syntax on
 set incsearch  " INCremental search
 set hls        " HighLight Search 
-set smarttab
+set expandtab
 set ts=3       " Tab Stops
 set sw=3       " Shift Width
 set sts=3      " Soft Tab Stop - should match shift width
 set ignorecase
-set smartcase
 
 "
 " Setup word wrapping, and window settings
@@ -115,12 +114,17 @@ au BufNewFile,BufRead  *.note colorscheme delek
 " Setup environment for Python Files
 "
 au BufNewFile,BufRead  *.py :set expandtab ts=2 sw=2 sts=2
+au BufNewFile,BufRead  *.py3 :set expandtab ts=2 sw=2 sts=2
+
+"
+" Setup environment for Makefiles
+"
+autocmd FileType make setlocal noexpandtab
 
 "
 " Setup Auto-completion
 "
 inoremap qp <C-P>
 inoremap qn <C-N>
-inoremap <tab> <C-P>
 
 au VimResized * exe "normal! \<c-w>="
