@@ -22,6 +22,7 @@
 # 
 #           Exit Codes:
 #           1  - Unknown Shell passed as --shell/-s argument
+#           2  - 'Which' failed to find the shells
 #           10 - File contains no extension and is not a Makefile
 #           11 - File extension is unknown
 #
@@ -77,11 +78,19 @@ def main(args):
    #
    # Store the location of the Perl, Python, TCsh and Bash interpreters
    #
-   myPerl = subprocess.check_output(['which', 'perl'])[:-1]
-   myTcsh = subprocess.check_output(['which', 'tcsh'])[:-1]
-   myBash = subprocess.check_output(['which', 'bash'])[:-1]
-   myPython = subprocess.check_output(['which', 'python'])[:-1]
-   myPython3 = subprocess.check_output(['which', 'python3'])[:-1]
+   try:
+      myPerl = subprocess.check_output(['which', 'perl'])[:-1]
+      myTcsh = subprocess.check_output(['which', 'tcsh'])[:-1]
+      myBash = subprocess.check_output(['which', 'bash'])[:-1]
+      myPython = subprocess.check_output(['which', 'python'])[:-1]
+      myPython3 = subprocess.check_output(['which', 'python3'])[:-1]
+   except subprocess.CalledProcessError, err:
+      #
+      # If any of the shells can't be found, give up.
+      #
+      print "Could not find shell: %s" % err.cmd[1]
+      exit(2)
+
    # Stop Python from making .pyc files
    if sys.version_info >= (2,7,4):
       myPython = myPython + ' -B'
