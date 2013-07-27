@@ -137,7 +137,7 @@ def main(args):
    rawDate = dt.datetime.now()
    day = rawDate.day
    month = str(dayDict.get(str(rawDate.month)))
-   year = rawDate.year
+   year = str(rawDate.year)
    hour = rawDate.hour
    minute = rawDate.minute
    if hour > 12:
@@ -152,7 +152,7 @@ def main(args):
       hour = 12
       AM_PM = 'AM'
 
-   dateStr = '%d-%s-%d' % (day, month, year)
+   dateStr = '%d-%s-%s' % (day, month, year)
    dateStr = dateStr + ' %d:%02d %s' % (hour, minute, AM_PM)
    date = dateStr
    
