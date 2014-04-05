@@ -70,9 +70,10 @@ def main( args ):
   if args.shape in valid_shapes:
     shape = args.shape
   else:
-    print "Unknown shape type: " + args.shape
+    if args.shape != None:
+      print "Unknown shape type: " + args.shape
     shape = "folder"
-    print "Defaulting to " + shape
+    print "Using default shape: " + shape
 
   unvisited_nodes = [root_dir]
   visited_nodes = []
