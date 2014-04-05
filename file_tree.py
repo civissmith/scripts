@@ -28,6 +28,8 @@
 #
 # Exit Codes:
 # 1 - No root directory specified
+# 2 - Root directory could not be found
+#
 # @Revision:
 # $Id: $
 #
@@ -55,6 +57,9 @@ def main( args ):
     print "Starting directory must be specified with '-r or --root'"
     exit(1)
 
+  if not os.path.isdir(root_dir):
+    print "Could not find directory: " + root_dir
+    exit(2)
   # If no output is specified, assume ROOT + ".dot"
   if args.output:
     file_name = args.output
