@@ -1,3 +1,4 @@
+
 #!/usr/bin/python -B
 ################################################################################
 # Copyright 2014 Phil Smith
@@ -31,19 +32,22 @@
 #
 ################################################################################
 import os
+import sys
+import argparse
 
 #
 # main: The main entry point for the file tree browser.
-#
-def main():
+#{
+def main( args ):
   """
   This function is the main entry point for the file tree browser.
   """
-
+  
   #
   # Find all of the directories and their children.
   #
-  root_dir = "foo"
+  root_dir = args.root
+  file_name = args.output
 
   unvisited_nodes = [root_dir]
   visited_nodes = []
@@ -63,11 +67,6 @@ def main():
      for child in os.listdir(current):
         path = os.path.join(current, child)
         if os.path.isdir( path ):
-#          print "path = " + path
-#          print "child = " + child
-#          print "parent = " + current
-#          print "parent uid = " + uid
-#          print
            children.append(path)
            node_to_name[uid] = children
            unvisited_nodes.append( path )
@@ -76,26 +75,52 @@ def main():
   for node in visited_nodes:
      name_to_node[node[1]] = node[0]
 
+  out_file = open( file_name, 'w' )
+#
+# Write the opening graph information
+#
+  
+  out_file.write( "digraph G\n{\n")
   for name in name_to_node.keys():
-    node = name_to_node[name]
     #
     #  Create drawing rules for nodes
     #
-    # ___appstatII_CVS [shape=folder,label="CVS", fill=Green];
-    print node + '[shape=folder,label="' + node + '", fill=Green];'
+    node = name_to_node[name]
+    label = os.path.split(name)[-1]
+    out_file.write( node + '[shape=folder,label="' + label + '", fill=Green];\n')
+
   for node in node_to_name:
-    #print node + ":"
     current = node_to_name[node]
     for each in current:
-    # print name_to_node[each]
-      print node + "->" + name_to_node[each] + ";"
       #
       # Create rules for edges here
       #
+      out_file.write( node + "->" + name_to_node[each] + ";\n")
+#
+# Write the closing graph information
+#
+  out_file.write("}\n")
+  out_file.close()
+
+#}
+# End of main()
+#
 
 #
 # Invocation Check:
 #
 if __name__ == "__main__":
-  main()
+  #
+  # Parse the command line arguments
+  # 
+  descStr="""
+  Create a file containing graph data formatted for the 'dot' utility.
+  """
+  progName = sys.argv[0]
+  parser = argparse.ArgumentParser(prog=progName ,description=descStr)
+  parser.add_argument('-r','--root', help='Folder from which to start the search.')
+  parser.add_argument('-o','--output', help='Name of the output file.')
+  args = parser.parse_args()
 
+
+  main( args )
