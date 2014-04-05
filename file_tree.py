@@ -1,4 +1,3 @@
-
 #!/usr/bin/python -B
 ################################################################################
 # Copyright 2014 Phil Smith
@@ -27,6 +26,8 @@
 # @Purpose: Create a 'dot' digraph of the folder tree rooted at the given
 #           directory.
 #
+# Exit Codes:
+# 1 - No root directory specified
 # @Revision:
 # $Id: $
 #
@@ -44,10 +45,34 @@ def main( args ):
   """
   
   #
-  # Find all of the directories and their children.
+  # Assign the parsed arguments.
   #
-  root_dir = args.root
-  file_name = args.output
+  if args.root:
+    root_dir = args.root
+    while '/' == root_dir[-1]:
+      root_dir = root_dir[:-1]
+  else:
+    print "Starting directory must be specified with '-r or --root'"
+    exit(1)
+
+  # If no output is specified, assume ROOT + ".dot"
+  if args.output:
+    file_name = args.output
+  else:
+    file_name = root_dir + ".dot"
+
+  # Default shape will be 'folder'
+  # valid_shapes taken from: www.graphviz.org/doc/info/shapes.html
+  valid_shapes = ["box", "ellipse", "circle", "point", "egg", "triangle",
+                  "doublecircle", "house", "diamond", "plaintext", "none",
+                  "hexagon", "octagon", "tab", "note"]
+                   
+  if args.shape in valid_shapes:
+    shape = args.shape
+  else:
+    print "Unknown shape type: " + args.shape
+    shape = "folder"
+    print "Defaulting to " + shape
 
   unvisited_nodes = [root_dir]
   visited_nodes = []
@@ -86,8 +111,15 @@ def main( args ):
     #  Create drawing rules for nodes
     #
     node = name_to_node[name]
+    if name == root_dir:
+      outline = "blue"
+    else:
+      outline = "black"
+    
     label = os.path.split(name)[-1]
-    out_file.write( node + '[shape=folder,label="' + label + '", fill=Green];\n')
+    out_file.write( node + '[shape=' + shape + 
+                           ',color=' + outline +
+                           ',label="' + label + '"];\n')
 
   for node in node_to_name:
     current = node_to_name[node]
@@ -120,6 +152,7 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(prog=progName ,description=descStr)
   parser.add_argument('-r','--root', help='Folder from which to start the search.')
   parser.add_argument('-o','--output', help='Name of the output file.')
+  parser.add_argument('-s','--shape', help='Shape used to represent the folders.')
   args = parser.parse_args()
 
 
