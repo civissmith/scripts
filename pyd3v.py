@@ -20,7 +20,7 @@ import binascii
 # main(): Main entry point of this program
 #{
 def main():
-  mp3_name = "TheFuneral.mp3"
+  mp3_name = "Enjoy.mp3"
   mp3_file = open( mp3_name, 'rb' )
   mp3_data = mp3_file.read()
 
@@ -28,19 +28,41 @@ def main():
   v_major, v_minor = ord(mp3_data[3]), ord(mp3_data[4])
   flags = mp3_data[5]
   
-  title = mp3_data.find("TIT2") 
   
   print id3_tag
   print v_major
   print v_minor
-  print title
-  print mp3_data[title:title+4]
-  tag_len = mp3_data[title+4:title+8]
+ 
+  # TIT2 := Title/songname/content description
+  tit2 = mp3_data.find("TIT2") 
+
+  # TPE1 := Lead performer(s)/Soloist(s)
+  tpe1 = mp3_data.find("TPE1")
+
+  # TALB := Album/Movie/Show title
+  talb = mp3_data.find("TALB")
+
+  # TIT2
+# print mp3_data[tit2:tit2+4]
+  tag_len = mp3_data[tit2+4:tit2+8]
   tag_len = get_int_from_synch(tag_len)
-  title_str = mp3_data[title+10:title+10+tag_len]
+  title_str = mp3_data[tit2+10:tit2+10+tag_len]
   print stringify(title_str)
-#  print get_int_from_synch( mp3_data[title+7] )
-#  print get_int_from_synch( mp3_data[6:10] )
+
+  # TPE1
+# print mp3_data[tpe1:tpe1+4]
+  tag_len = mp3_data[tpe1+4:tpe1+8]
+  tag_len = get_int_from_synch(tag_len)
+  title_str = mp3_data[tpe1+10:tpe1+10+tag_len]
+  print stringify(title_str)
+
+  # TALB
+# print mp3_data[talb:talb+4]
+  tag_len = mp3_data[talb+4:talb+8]
+  tag_len = get_int_from_synch(tag_len)
+  title_str = mp3_data[talb+10:talb+10+tag_len]
+  print stringify(title_str)
+
   mp3_file.close()
   
 #}
@@ -52,10 +74,12 @@ def main():
 #{
 def stringify( string ):
   output = ""
-  chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  chars='&ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   for each in string:
     if each in chars:
       output += each
+    if each in ' ':
+      output += '_'
 
   return output
 #}
@@ -79,14 +103,10 @@ def get_int_from_synch( synch ):
   two   = int(ord(synch[1]))
   three = int(ord(synch[2]))
   four  = int(ord(synch[3]))
-  print one
-  print two
-  print three
-  print four
+
   synch = (four << 0) | (three << 7) | (two << 14) | (one << 21)
 
-
-  return int(synch)
+  return synch
 #}
 #
 # 
