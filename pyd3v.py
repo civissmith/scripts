@@ -14,8 +14,6 @@
 # $Id: $
 #
 ################################################################################
-import struct
-import binascii
 #
 # main(): Main entry point of this program
 #{
@@ -28,46 +26,34 @@ def main():
   v_major, v_minor = ord(mp3_data[3]), ord(mp3_data[4])
   flags = mp3_data[5]
   
-  
-  print id3_tag
-  print v_major
-  print v_minor
- 
-  # TIT2 := Title/songname/content description
-  tit2 = mp3_data.find("TIT2") 
-
-  # TPE1 := Lead performer(s)/Soloist(s)
-  tpe1 = mp3_data.find("TPE1")
-
-  # TALB := Album/Movie/Show title
-  talb = mp3_data.find("TALB")
-
   # TIT2
-# print mp3_data[tit2:tit2+4]
-  tag_len = mp3_data[tit2+4:tit2+8]
-  tag_len = get_int_from_synch(tag_len)
-  title_str = mp3_data[tit2+10:tit2+10+tag_len]
-  print stringify(title_str)
+  print get_data("TIT2", mp3_data)
 
   # TPE1
-# print mp3_data[tpe1:tpe1+4]
-  tag_len = mp3_data[tpe1+4:tpe1+8]
-  tag_len = get_int_from_synch(tag_len)
-  title_str = mp3_data[tpe1+10:tpe1+10+tag_len]
-  print stringify(title_str)
+  print get_data("TPE1", mp3_data)
 
   # TALB
-# print mp3_data[talb:talb+4]
-  tag_len = mp3_data[talb+4:talb+8]
-  tag_len = get_int_from_synch(tag_len)
-  title_str = mp3_data[talb+10:talb+10+tag_len]
-  print stringify(title_str)
+  print get_data("TALB", mp3_data)
 
   mp3_file.close()
   
 #}
 #
 #
+
+#
+# get_data: gets data requested in the 'tag' from the 'mp3' file
+#{
+def get_data( tag, mp3 ):
+  data = mp3.find(tag)
+  tag_len = mp3[data+4:data+8]
+  tag_len = get_int_from_synch(tag_len)
+  title_str = mp3[data+10:data+10+tag_len]
+
+  return stringify(title_str)
+#}
+#
+# 
 
 #
 # stringify: Strips out garbage from the different strings
@@ -93,17 +79,13 @@ def get_int_from_synch( synch ):
   # Expect 32-bit integers
   if len(synch) != 4:
     return -1 
-   
-#  one   = struct.unpack('c', synch[0])
-#  two   = struct.unpack('c', synch[1])
-#  three = struct.unpack('c', synch[2])
-#  four  = struct.unpack('c', synch[3])
   
   one   = int(ord(synch[0]))
   two   = int(ord(synch[1]))
   three = int(ord(synch[2]))
   four  = int(ord(synch[3]))
 
+  # Undo the 'synchsafe' encoding
   synch = (four << 0) | (three << 7) | (two << 14) | (one << 21)
 
   return synch
