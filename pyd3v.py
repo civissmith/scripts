@@ -97,7 +97,15 @@ def get_data( tag, mp3 ):
 #{
 def stringify( string ):
   output = ""
-  chars='&ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  # Specials
+  chars  ='-&'
+  # Uppers
+  chars +='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  # Lowers
+  chars +='abcdefghijklmnopqrstuvwxyz'
+  # Digits
+  chars +='0123456789'
+
   for each in string:
     if each in chars:
       output += each
