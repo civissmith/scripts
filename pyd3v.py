@@ -22,6 +22,9 @@ import sys
 #{
 def main( args ):
 
+  #
+  # Process each file given at the command line
+  #
   for each in args.files:
     mp3_name = each
     mp3_file = open( mp3_name, 'rb' )
@@ -31,20 +34,26 @@ def main( args ):
     v_major, v_minor = ord(mp3_data[3]), ord(mp3_data[4])
     flags = mp3_data[5]
   
-    if int(v_major) < 3:
-        print "Could not process: " + each
-        return
-    # TIT2
-    print get_data("TIT2", mp3_data)
+    # The field names changed between v2.2 and v2.3
+    if v_major == 3 or v_major == 4:
+      title  = get_data("TIT2", mp3_data) + ".mp3"
+      artist = get_data("TPE1", mp3_data)
+      album  = get_data("TALB", mp3_data)
 
-    # TPE1
-    print get_data("TPE1", mp3_data)
+    elif v_major == 1 or v_major == 2:
+      title  = get_data("TT2", mp3_data) + ".mp3"
+      artist = get_data("TP1", mp3_data)
+      album  = get_data("TAL", mp3_data)
 
-    # TALB
-    print get_data("TALB", mp3_data)
+    else: 
+      # Getting here means that the tag is not one of the 
+      # recognized versions.
+      print "Unrecognized version: %d.%d" % (v_major, v_minor)
 
     mp3_file.close()
-  
+    print title
+    print artist  
+    print album  
 #}
 #
 #
@@ -53,12 +62,30 @@ def main( args ):
 # get_data: gets data requested in the 'tag' from the 'mp3' file
 #{
 def get_data( tag, mp3 ):
-  data = mp3.find(tag)
-  if data < 0:
-    raise TypeError
-  tag_len = mp3[data+4:data+8]
-  tag_len = get_int_from_synch(tag_len)
-  title_str = mp3[data+10:data+10+tag_len]
+  id3v2_34 = ["TIT2", "TPE1", "TALB"]
+  # ID3v2.
+  id3v2_12  = ["TT2", "TP1", "TAL"]
+
+  # Make sure the flags are ID3v2.1, ID3v2.2, ID3v2.3 or ID3v2.4
+  if tag in id3v2_34 or tag in id3v2_12:
+    data = mp3.find(tag)
+
+    # If a tag isn't in the MP3 file, flag the field as "Unknown"
+    if data < 0:
+      return 'Unknown' 
+
+    if tag in id3v2_34:
+      tag_len = mp3[data+4:data+8]
+      tag_len = get_int_from_synch(tag_len)
+      title_str = mp3[data+10:data+10+tag_len]
+    elif tag in id3v2_12:
+      tag_len = mp3[data+3:data+6]
+      tag_len = get_int_from_synch(tag_len)
+      title_str = mp3[data+6:data+6+tag_len]
+
+  else:
+    # Handle the case for unknown flags
+    return ("Tag (%s) not supported" % tag)
 
   return stringify(title_str)
 #}
@@ -86,17 +113,21 @@ def stringify( string ):
 # get_int_from_synch: Get the integer value from the list of synchsafe ints.
 #{
 def get_int_from_synch( synch ):
-  # Expect 32-bit integers
-  if len(synch) != 4:
-    return -1 
-  
-  one   = int(ord(synch[0]))
-  two   = int(ord(synch[1]))
-  three = int(ord(synch[2]))
-  four  = int(ord(synch[3]))
-
+  # v2.1-v2.2 use 3 bytes, v2.3-v2.4 use 4 bytes
   # Undo the 'synchsafe' encoding
-  synch = (four << 0) | (three << 7) | (two << 14) | (one << 21)
+  if len(synch) == 4:
+     one   = int(ord(synch[0]))
+     two   = int(ord(synch[1]))
+     three = int(ord(synch[2]))
+     four  = int(ord(synch[3]))
+     synch = (four << 0) | (three << 7) | (two << 14) | (one << 21)
+  elif len(synch) == 3:
+     one   = int(ord(synch[0]))
+     two   = int(ord(synch[1]))
+     three = int(ord(synch[2]))
+     synch = (three << 0) | (two << 7) | (one << 14)
+  else:
+     synch = -1
 
   return synch
 #}
