@@ -10,17 +10,26 @@
 #
 # @Purpose: Create folders for ID3v2 or ID3v1 songs
 #
+# Exit Codes:
+# 1 - Library doesn't exist and cannot be created
+#
 # @Revision:
 # $Id: $
 #
 ################################################################################
 import argparse
 import sys
+import os
 
 #
 # main(): Main entry point of this program
 #{
 def main( args ):
+
+  #
+  # Tie this to the -l --library flag
+  #
+  library = "./temp/music_lib"
 
   #
   # Process each file given at the command line
@@ -51,6 +60,18 @@ def main( args ):
       print "Unrecognized version: %d.%d" % (v_major, v_minor)
 
     mp3_file.close()
+
+    #
+    # Check to make sure that the library exists. If not, try to create it.
+    # If the directory can't be made, quit.
+    #
+    if not os.path.isdir(library):
+      try:
+        os.mkdir(library)
+      except OSError as err:
+        print "Could not create directory: %s" % library
+        print "Error: %s" % err
+        exit(1)
     print title
     print artist  
     print album  
