@@ -28,10 +28,11 @@ import os
 #{
 def main( args ):
 
-  #
-  # Tie this to the -l --library flag
-  #
-  library = "./temp/music_lib"
+  if args.library:
+    library = args.library
+  else:
+    home = os.path.expanduser('~')
+    library = os.path.join(home,'Music')
 
   #
   # Process each file given at the command line
