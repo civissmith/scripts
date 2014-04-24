@@ -12,12 +12,14 @@
 #
 # Exit Codes:
 # 1 - Library doesn't exist and cannot be created
+# 2 - MP3 file couldn't be copied to library
 #
 # @Revision:
 # $Id: $
 #
 ################################################################################
 import argparse
+import shutil
 import sys
 import os
 
@@ -65,16 +67,32 @@ def main( args ):
     # Check to make sure that the library exists. If not, try to create it.
     # If the directory can't be made, quit.
     #
-    if not os.path.isdir(library):
+    full_path = os.path.join(library,artist,album)
+    if not os.path.isdir(full_path):
       try:
-        os.mkdir(library)
+        os.makedirs(full_path)
       except OSError as err:
-        print "Could not create directory: %s" % library
+        print "Could not create directory: %s" % full_path
         print "Error: %s" % err
         exit(1)
-    print title
-    print artist  
-    print album  
+
+    #
+    # Check to see if the file is already in the library. If not, try to copy
+    # it there.
+    #
+    full_title = os.path.join(full_path, title)
+    if not os.path.isfile(os.path.join(full_title)):
+        try:
+          print "Copying file (%s) to (%s)" % (mp3_name, full_title)
+          shutil.copy(mp3_name, full_title)
+        except IOError as err:
+          print "Could not create file: %s" % full_title
+          print "Error: %s" % err
+          exit(2)
+
+#   print title
+#   print artist  
+#   print album  
 #}
 #
 #
