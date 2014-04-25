@@ -11,10 +11,10 @@
 # @Purpose: Create folders for ID3v2 or ID3v1 songs
 #
 # Exit Codes:
-# 1 - Library doesn't exist and cannot be created
-# 2 - MP3 file couldn't be copied to library
-# 3 - MP3 file (input file) doesn't exist
-# 4 - Invalid ID3 Tag
+# 1 - MP3 file (input file) doesn't exist
+# 2 - Invalid ID3 Tag
+# 3 - Library doesn't exist and cannot be created
+# 4 - MP3 file couldn't be copied to library
 #
 # @Revision:
 # $Id: $
@@ -48,7 +48,7 @@ def main( args ):
     # Might be a good idea to make sure the file exists...
     if not os.path.isfile(mp3_name):
       print "Could not find file: %s" % mp3_name
-      error = 3
+      error = 1
       continue
     mp3_file = open( mp3_name, 'rb' )
     mp3_data = mp3_file.read()
@@ -78,7 +78,7 @@ def main( args ):
       print "File: %s:" % mp3_name
       print "Unrecognized version: %d.%d\n" % (v_major, v_minor)
       mp3_file.close()
-      error = 4
+      error = 2
       continue
 
     mp3_file.close()
@@ -95,7 +95,7 @@ def main( args ):
         except OSError as err:
           print "Could not create directory: %s" % full_path
           print "Error: %s" % err
-          exit(1)
+          exit(3)
 
       #
       # Check to see if the file is already in the library. If not, try to copy
@@ -109,7 +109,7 @@ def main( args ):
           except IOError as err:
             print "Could not create file: %s" % full_title
             print "Error: %s" % err
-            exit(2)
+            exit(4)
     else:
       #
       # Info on a single row is easier to read in text file (for me).
