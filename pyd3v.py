@@ -13,6 +13,8 @@
 # Exit Codes:
 # 1 - Library doesn't exist and cannot be created
 # 2 - MP3 file couldn't be copied to library
+# 3 - MP3 file (input file) doesn't exist
+# 4 - Invalid ID3 Tag
 #
 # @Revision:
 # $Id: $
@@ -33,12 +35,21 @@ def main( args ):
   else:
     home = os.path.expanduser('~')
     library = os.path.join(home,'Music')
+  
+  # Store an error code variable in a loop-break is caught. Note that this
+  # only captures the last known error condtion!
+  error = 0
 
   #
   # Process each file given at the command line
   #
   for each in args.files:
     mp3_name = each
+    # Might be a good idea to make sure the file exists...
+    if not os.path.isfile(mp3_name):
+      print "Could not find file: %s" % mp3_name
+      error = 3
+      break
     mp3_file = open( mp3_name, 'rb' )
     mp3_data = mp3_file.read()
 
@@ -62,6 +73,7 @@ def main( args ):
       # recognized versions.
       print "Unrecognized version: %d.%d" % (v_major, v_minor)
       mp3_file.close()
+      error = 4
       break
 
     mp3_file.close()
@@ -101,6 +113,10 @@ def main( args ):
       print "Title: %s," % title,
       print "Artist: %s," % artist,
       print "Album: %s\n" % album
+
+  if error != 0:
+    print "Warning! An error was detected!"
+    exit(error) 
 
 #}
 #
