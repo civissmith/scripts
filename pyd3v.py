@@ -49,11 +49,15 @@ def main( args ):
     if not os.path.isfile(mp3_name):
       print "Could not find file: %s" % mp3_name
       error = 3
-      break
+      continue
     mp3_file = open( mp3_name, 'rb' )
     mp3_data = mp3_file.read()
 
     id3_tag =  mp3_data[:3]
+    if id3_tag not in 'ID3':
+      print "File: %s:" % mp3_name
+      print "No ID3 information available!\n"
+      continue
     v_major, v_minor = ord(mp3_data[3]), ord(mp3_data[4])
     flags = mp3_data[5]
   
@@ -71,10 +75,11 @@ def main( args ):
     else: 
       # Getting here means that the tag is not one of the 
       # recognized versions.
-      print "Unrecognized version: %d.%d" % (v_major, v_minor)
+      print "File: %s:" % mp3_name
+      print "Unrecognized version: %d.%d\n" % (v_major, v_minor)
       mp3_file.close()
       error = 4
-      break
+      continue
 
     mp3_file.close()
 
@@ -109,7 +114,7 @@ def main( args ):
       #
       # Info on a single row is easier to read in text file (for me).
       #
-      print "File: %s:" % each
+      print "File: %s:" % mp3_name
       print "Title: %s," % title,
       print "Artist: %s," % artist,
       print "Album: %s\n" % album
@@ -130,12 +135,16 @@ def get_data( tag, mp3 ):
   # ID3v2.
   id3v2_12  = ["TT2", "TP1", "TAL"]
 
+  # MP3 spec says the sync frame must be 255, ID3 headers must end BEFORE
+  # the first valid frame.
+  first_frame = mp3.find('FF')
+
   # Make sure the flags are ID3v2.1, ID3v2.2, ID3v2.3 or ID3v2.4
   if tag in id3v2_34 or tag in id3v2_12:
     data = mp3.find(tag)
 
     # If a tag isn't in the MP3 file, flag the field as "Unknown"
-    if data < 0:
+    if data < 0 or data >= first_frame:
       return 'Unknown' 
 
     if tag in id3v2_34:
