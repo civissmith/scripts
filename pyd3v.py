@@ -61,39 +61,47 @@ def main( args ):
       # Getting here means that the tag is not one of the 
       # recognized versions.
       print "Unrecognized version: %d.%d" % (v_major, v_minor)
+      mp3_file.close()
+      break
 
     mp3_file.close()
 
-    #
-    # Check to make sure that the library exists. If not, try to create it.
-    # If the directory can't be made, quit.
-    #
-    full_path = os.path.join(library,artist,album)
-    if not os.path.isdir(full_path):
-      try:
-        os.makedirs(full_path)
-      except OSError as err:
-        print "Could not create directory: %s" % full_path
-        print "Error: %s" % err
-        exit(1)
-
-    #
-    # Check to see if the file is already in the library. If not, try to copy
-    # it there.
-    #
-    full_title = os.path.join(full_path, title)
-    if not os.path.isfile(os.path.join(full_title)):
+    if not args.check:
+      #
+      # Check to make sure that the library exists. If not, try to create it.
+      # If the directory can't be made, quit.
+      #
+      full_path = os.path.join(library,artist,album)
+      if not os.path.isdir(full_path):
         try:
-          print "Copying file (%s) to (%s)" % (mp3_name, full_title)
-          shutil.copy(mp3_name, full_title)
-        except IOError as err:
-          print "Could not create file: %s" % full_title
+          os.makedirs(full_path)
+        except OSError as err:
+          print "Could not create directory: %s" % full_path
           print "Error: %s" % err
-          exit(2)
+          exit(1)
 
-#   print title
-#   print artist  
-#   print album  
+      #
+      # Check to see if the file is already in the library. If not, try to copy
+      # it there.
+      #
+      full_title = os.path.join(full_path, title)
+      if not os.path.isfile(os.path.join(full_title)):
+          try:
+            print "Copying file (%s) to (%s)" % (mp3_name, full_title)
+            shutil.copy(mp3_name, full_title)
+          except IOError as err:
+            print "Could not create file: %s" % full_title
+            print "Error: %s" % err
+            exit(2)
+    else:
+      #
+      # Info on a single row is easier to read in text file (for me).
+      #
+      print "File: %s:" % each
+      print "Title: %s," % title,
+      print "Artist: %s," % artist,
+      print "Album: %s\n" % album
+
 #}
 #
 #
@@ -138,7 +146,7 @@ def get_data( tag, mp3 ):
 def stringify( string ):
   output = ""
   # Specials
-  chars  ='-&'
+  chars  ='-'
   # Uppers
   chars +='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   # Lowers
@@ -151,6 +159,9 @@ def stringify( string ):
       output += each
     if each in ' ':
       output += '_'
+    # Convert ampersands
+    if each in '&':
+      output += 'and'
 
   return output
 #}
@@ -195,6 +206,7 @@ if __name__ == "__main__":
    progName = sys.argv[0]
    parser = argparse.ArgumentParser(prog=progName ,description=descStr)
    parser.add_argument('-l','--library', help='Path to music library')
+   parser.add_argument('-c','--check', action='store_true', help='Check for ID3 tags, don\'t process files')
    parser.add_argument('files', nargs='+', help='Files to be processed')
    args = parser.parse_args()
 
