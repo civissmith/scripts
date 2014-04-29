@@ -1,4 +1,4 @@
-#!/usr/bin/python -B
+#!/usr/bin/env python
 ################################################################################
 # @Title: pyd3v.py
 #
@@ -45,6 +45,11 @@ def main( args ):
   #
   for each in args.files:
     mp3_name = each
+
+    # If the file isn't an MP3, skip it.
+    if mp3_name[-4:].lower() not in ".mp3":
+       continue
+     
     # Might be a good idea to make sure the file exists...
     if not os.path.isfile(mp3_name):
       print "Could not find file: %s" % mp3_name
@@ -135,9 +140,10 @@ def get_data( tag, mp3 ):
   # ID3v2.
   id3v2_12  = ["TT2", "TP1", "TAL"]
 
-  # MP3 spec says the sync frame must be 255, ID3 headers must end BEFORE
-  # the first valid frame.
-  first_frame = mp3.find('FF')
+  # Assume the tag data will be BEFORE the first valid frame.
+  # This ignores tags appended to the end of the data stream!
+  tag_size = mp3[6:10]
+  first_frame = get_int_from_synch(tag_size) + 10
 
   # Make sure the flags are ID3v2.1, ID3v2.2, ID3v2.3 or ID3v2.4
   if tag in id3v2_34 or tag in id3v2_12:
