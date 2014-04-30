@@ -65,17 +65,21 @@ def main( args ):
       continue
     v_major, v_minor = ord(mp3_data[3]), ord(mp3_data[4])
     flags = mp3_data[5]
+    # Assume the tag data will be BEFORE the first valid frame.
+    # This ignores tags appended to the end of the data stream!
+    tag_size = mp3_data[6:10]
+    first_frame = get_int_from_synch(tag_size) + 10
   
     # The field names changed between v2.2 and v2.3
     if v_major == 3 or v_major == 4:
-      title  = get_data("TIT2", mp3_data) + ".mp3"
-      artist = get_data("TPE1", mp3_data)
-      album  = get_data("TALB", mp3_data)
+      title  = get_data("TIT2", mp3_data[:first_frame]) + ".mp3"
+      artist = get_data("TPE1", mp3_data[:first_frame])
+      album  = get_data("TALB", mp3_data[:first_frame])
 
     elif v_major == 1 or v_major == 2:
-      title  = get_data("TT2", mp3_data) + ".mp3"
-      artist = get_data("TP1", mp3_data)
-      album  = get_data("TAL", mp3_data)
+      title  = get_data("TT2", mp3_data[:first_frame]) + ".mp3"
+      artist = get_data("TP1", mp3_data[:first_frame])
+      album  = get_data("TAL", mp3_data[:first_frame])
 
     else: 
       # Getting here means that the tag is not one of the 
@@ -133,24 +137,21 @@ def main( args ):
 #
 
 #
-# get_data: gets data requested in the 'tag' from the 'mp3' file
+# get_data: gets data requested in the 'tag' from the 'mp3' file header.
 #{
 def get_data( tag, mp3 ):
+
   id3v2_34 = ["TIT2", "TPE1", "TALB"]
   # ID3v2.
   id3v2_12  = ["TT2", "TP1", "TAL"]
 
-  # Assume the tag data will be BEFORE the first valid frame.
-  # This ignores tags appended to the end of the data stream!
-  tag_size = mp3[6:10]
-  first_frame = get_int_from_synch(tag_size) + 10
 
   # Make sure the flags are ID3v2.1, ID3v2.2, ID3v2.3 or ID3v2.4
   if tag in id3v2_34 or tag in id3v2_12:
     data = mp3.find(tag)
 
     # If a tag isn't in the MP3 file, flag the field as "Unknown"
-    if data < 0 or data >= first_frame:
+    if data < 0:
       return 'Unknown' 
 
     if tag in id3v2_34:
@@ -203,19 +204,20 @@ def stringify( string ):
 # get_int_from_synch: Get the integer value from the list of synchsafe ints.
 #{
 def get_int_from_synch( synch ):
+
+  one   = int(ord(synch[0]))
+  two   = int(ord(synch[1]))
+  three = int(ord(synch[2]))
+
   # v2.1-v2.2 use 3 bytes, v2.3-v2.4 use 4 bytes
   # Undo the 'synchsafe' encoding
   if len(synch) == 4:
-     one   = int(ord(synch[0]))
-     two   = int(ord(synch[1]))
-     three = int(ord(synch[2]))
      four  = int(ord(synch[3]))
      synch = (four << 0) | (three << 7) | (two << 14) | (one << 21)
+
   elif len(synch) == 3:
-     one   = int(ord(synch[0]))
-     two   = int(ord(synch[1]))
-     three = int(ord(synch[2]))
      synch = (three << 0) | (two << 7) | (one << 14)
+
   else:
      synch = -1
 
