@@ -28,7 +28,8 @@ directories of the target directory.
 from random import random, sample
 from sys import argv
 from os import chdir, listdir, getcwd, rename
-from os.path import isdir 
+from os.path import isdir
+from os.path import isfile
 
 if __name__ == '__main__':
    samplePopulace = "abcdefghijklmnopqrstuvwxyz"
