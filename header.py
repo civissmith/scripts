@@ -22,12 +22,11 @@
 # 
 #           Exit Codes:
 #           1  - Unknown Shell passed as --shell/-s argument
-#           2  - 'Which' failed to find the shells
 #           10 - File contains no extension and is not a Makefile
 #           11 - File extension is unknown
 #
 # @Modification History: 
-# $Id: header.py,v 1.5 2013/07/17 06:23:46 alpha Exp $
+# $Id: header.py,v 1.6 2013/07/27 20:12:31 alpha Exp $
 ###############################################################################
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -42,24 +41,8 @@ import subprocess
 import stat
 import sys
 import os
-import datetime as dt
-
-#
-# dayDict creates the month name mapping to month numbers.
-#
-dayDict = { '1':'Jan',
-            '2':'Feb',
-            '3':'Mar',
-            '4':'Apr',
-            '5':'May',
-            '6':'Jun',
-            '7':'Jul',
-            '8':'Aug',
-            '9':'Sep',
-            '10':'Oct',
-            '11':'Nov',
-            '12':'Dec'
-}
+from datetime import datetime
+from time import strftime, localtime
 
 #
 # shaBang list of file types that need a shabang (#!) line.
@@ -78,19 +61,11 @@ def main(args):
    #
    # Store the location of the Perl, Python, TCsh and Bash interpreters
    #
-   try:
-      myPerl = subprocess.check_output(['which', 'perl'])[:-1]
-      myTcsh = subprocess.check_output(['which', 'tcsh'])[:-1]
-      myBash = subprocess.check_output(['which', 'bash'])[:-1]
-      myPython = subprocess.check_output(['which', 'python'])[:-1]
-      myPython3 = subprocess.check_output(['which', 'python3'])[:-1]
-   except subprocess.CalledProcessError, err:
-      #
-      # If any of the shells can't be found, give up.
-      #
-      print "Could not find shell: %s" % err.cmd[1]
-      exit(2)
-
+   myPerl = subprocess.check_output(['which', 'perl'])[:-1]
+   myTcsh = subprocess.check_output(['which', 'tcsh'])[:-1]
+   myBash = subprocess.check_output(['which', 'bash'])[:-1]
+   myPython = subprocess.check_output(['which', 'python'])[:-1]
+   myPython3 = subprocess.check_output(['which', 'python3'])[:-1]
    # Stop Python from making .pyc files
    if sys.version_info >= (2,7,4):
       myPython = myPython + ' -B'
@@ -131,30 +106,7 @@ def main(args):
       if shell not in shaBang:
          print "%s is an unknown shell! Aborting!" % shell
          sys.exit(1)
-   #
-   # Reformat the date string
-   #
-   rawDate = dt.datetime.now()
-   day = rawDate.day
-   month = str(dayDict.get(str(rawDate.month)))
-   year = str(rawDate.year)
-   hour = rawDate.hour
-   minute = rawDate.minute
-   if hour > 12:
-      hour = hour - 12
-      AM_PM = 'PM'
-   elif hour == 12:
-      AM_PM = 'PM'
-   else:
-      AM_PM = 'AM'
 
-   if hour == 0:
-      hour = 12
-      AM_PM = 'AM'
-
-   dateStr = '%d-%s-%s' % (day, month, year)
-   dateStr = dateStr + ' %d:%02d %s' % (hour, minute, AM_PM)
-   date = dateStr
    
    #
    # Process each file
@@ -237,19 +189,19 @@ def main(args):
       #
       if args.apache:
          print_line(outFile, columns, openCharSet )
-         print_apache( outFile, comment, year, author )
+         print_apache( outFile, comment, author )
          print_line(outFile, columns, closeCharSet )
       elif args.bsd:
          print_line(outFile, columns, openCharSet )
-         print_bsd2( outFile, comment, year, author )
+         print_bsd2( outFile, comment,  author )
          print_line(outFile, columns, closeCharSet )
       elif args.gpl:
          print_line(outFile, columns, openCharSet )
-         print_gpl3( outFile, comment, year, author )
+         print_gpl3( outFile, comment,  author )
          print_line(outFile, columns, closeCharSet )
       elif args.mit:
          print_line(outFile, columns, openCharSet )
-         print_mit( outFile, comment, year, author )
+         print_mit( outFile, comment, author )
          print_line(outFile, columns, closeCharSet )
 
       print_line(outFile, columns, openCharSet )
@@ -257,7 +209,7 @@ def main(args):
       outFile.write( comment + '\n' )
       outFile.write( comment + ' @Author: ' + author + '\n')
       outFile.write( comment + '\n' )
-      outFile.write( comment + ' @Date: ' + str(date) + '\n')
+      outFile.write( comment + ' @Date: ' + strftime("%a, %d-%b-%y %I:%M%p", localtime()) + '\n')
       outFile.write( comment + '\n' )
       outFile.write( comment + ' @Project: ' + project + '\n')
       outFile.write( comment + '\n' )
@@ -390,8 +342,8 @@ def print_line( file, len, charSet ):
 #
 # print_apache() - Prints the Apache license
 #
-def print_apache( file, comment, year, author ):
-   file.write( comment + ' Copyright ' + year + ' ' + author + '\n' )
+def print_apache( file, comment, author ):
+   file.write( comment + ' Copyright ' + str(datetime.now().year) + ' ' + author + '\n' )
    file.write( comment + '\n')
    file.write( comment + ' Licensed under the Apache License, Version 2.0 (the "License");\n' )
    file.write( comment + ' you may not use this file except in compliance with the License.\n' )
@@ -411,8 +363,8 @@ def print_apache( file, comment, year, author ):
 #
 # print_bsd2() - Prints the BSD license
 #
-def print_bsd2( file, comment, year, author ):
-   file.write( comment + ' Copyright (c) '+ year + ', ' + author +'\n' )
+def print_bsd2( file, comment, author ):
+   file.write( comment + ' Copyright (c) '+ str(datetime.now().year) + ', ' + author +'\n' )
    file.write( comment + ' All rights reserved.\n' )
    file.write( comment + '\n')
    file.write( comment + ' Redistribution and use in source and binary forms, with or without modification,\n' )
@@ -442,8 +394,8 @@ def print_bsd2( file, comment, year, author ):
 #
 # print_gpl3() - Prints the GNU General Public License
 #
-def print_gpl3( file, comment, year, author ):
-    file.write( comment + ' Copyright ' + year + ' ' + author + '\n' )
+def print_gpl3( file, comment, author ):
+    file.write( comment + ' Copyright ' + str(datetime.now().year) + ' ' + author + '\n' )
     file.write( comment + ' This program is free software: you can redistribute it and/or modify\n' )
     file.write( comment + ' it under the terms of the GNU General Public License as published by\n' )
     file.write( comment + ' the Free Software Foundation, either version 3 of the License, or\n' )
@@ -463,8 +415,8 @@ def print_gpl3( file, comment, year, author ):
 #
 # print_mit() - Prints the MIT license
 #
-def print_mit( file, comment, year, author ):
-   file.write( comment + ' Copyright (c) ' + year + ' '+ author +'\n' )
+def print_mit( file, comment, author ):
+   file.write( comment + ' Copyright (c) ' + str(datetime.now().year) + ' '+ author +'\n' )
    file.write( comment + '\n' )
    file.write( comment + ' Permission is hereby granted, free of charge, to any person obtaining a copy\n' )
    file.write( comment + ' of this software and associated documentation files (the "Software"), to deal\n' )
