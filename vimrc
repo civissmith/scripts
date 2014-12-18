@@ -14,8 +14,29 @@
 "  Date      Author      Description
 "  --------  ----------  ------------------------------------------------------
 "  26Jan13   PAS         Added standard header and prepped for Git.
+"  28Jun14   PAS         Updates over the last year
 "
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+if $COLORTERM == 'gnome-terminal'
+  set t_Co=256
+endif
+
+"
+" Disable 'Ex' mode - launch command history instead.
+"
+nnoremap Q q:
+
+"
+" Show highlighting groups for current word
+"
+nmap <C-S-P> :call <SID>SynStack()<CR>
+fun! <SID>SynStack()
+  if !exists("*synstack")
+    return
+  endif
+  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfun
+
 "
 " Add a new leader button for more custom commands
 " ( This should be BEFORE anything that uses the new leader )
@@ -28,12 +49,12 @@ nnoremap <leader>s :s/
 "
 " Set colorscheme
 "
-colorscheme desert
+colorscheme achilles
 
 "
 " Don't reach for ESC
 "
-inoremap qq <ESC>
+inoremap \\ <ESC>
 
 "
 " auto reload vimrc when editing it
@@ -85,6 +106,7 @@ set confirm
 "
 nnoremap <silent> <F4> :vsplit<CR>
 nnoremap <silent> <S-F5> :split<CR>
+
 " Fast buffer switching
 nnoremap <silent> <F5> :buffers!<CR>:buffer<Space>
 nnoremap <silent> <S-F6> :set relativenumber<CR>
@@ -95,7 +117,7 @@ nnoremap <silent> <S-F6> :set relativenumber<CR>
 nnoremap <silent> <F6> :set nu<CR>
 nnoremap <silent> <F7> :set nonu norelativenumber<CR>
 nnoremap <silent> <F8> :set hls<CR>
-nnoremap <silent> <F9> :set nohls<CR>
+nnoremap <silent> <F9> :nohls<CR>
 nnoremap <silent> + :exe "resize " . (winheight(0) * 3/2)<CR>
 nnoremap <silent> _ :exe "resize " . (winheight(0) * 2/3)<CR>
 nnoremap <silent> <S-Up> <C-w>k
@@ -114,7 +136,10 @@ au BufNewFile,BufRead  *.note colorscheme delek
 " Setup environment for Python Files
 "
 au BufNewFile,BufRead  *.py :set expandtab ts=2 sw=2 sts=2
+au BufNewFile,BufRead  *.py :set foldmethod=indent foldlevel=99
+au BufNewFile,BufRead  *.py :so ~/.vim/plugin/RainbowParenthsis.vim
 au BufNewFile,BufRead  *.py3 :set expandtab ts=2 sw=2 sts=2
+au BufNewFile,BufRead  *.py3 :so ~/.vim/plugin/RainbowParenthsis.vim
 
 "
 " Setup environment for Makefiles
@@ -124,7 +149,7 @@ autocmd FileType make setlocal noexpandtab
 "
 " Setup Auto-completion
 "
-inoremap qp <C-P>
-inoremap qn <C-N>
+inoremap <leader>p <C-P>
+inoremap <leader>n <C-N>
 
 au VimResized * exe "normal! \<c-w>="
