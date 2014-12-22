@@ -54,7 +54,7 @@ hi Statement   cterm=none ctermfg=yellow
 "hi Ignore      
 "hi Error      
 hi ColorColumn cterm=none ctermfg=lightcyan ctermbg=none
-hi CursorColumn cterm=none ctermfg=magenta ctermbg=none
-hi CursorLine cterm=none ctermfg=yellow ctermbg=none
+hi CursorColumn cterm=none ctermfg=cyan ctermbg=none
+hi CursorLine cterm=none ctermfg=cyan ctermbg=none
 hi Todo cterm=bold ctermfg=lightcyan ctermbg=black
 
