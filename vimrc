@@ -101,6 +101,13 @@ set background=dark
 set confirm
 
 "
+" Set cursor column and cursor line
+"
+nnoremap <silent> <C-S-K> :set cursorcolumn!<cr>
+nnoremap <silent> <C-S-L> :set cursorline!<cr>
+
+
+"
 " Setup shortcut keys for splitting, (de)selecting numbers, search highlighting
 " buffer switching, window moving and resizing
 "
@@ -109,13 +116,12 @@ nnoremap <silent> <S-F5> :split<CR>
 
 " Fast buffer switching
 nnoremap <silent> <F5> :buffers!<CR>:buffer<Space>
-nnoremap <silent> <S-F6> :set relativenumber<CR>
 "
 " Set relativenumber to give lines-from-current instead of absolute
 " (>= Vim 7.3)
 "
-nnoremap <silent> <F6> :set nu<CR>
-nnoremap <silent> <F7> :set nonu norelativenumber<CR>
+nnoremap <silent> <F6> :set nu!<CR>
+nnoremap <silent> <F7> :set relativenumber!<CR>
 nnoremap <silent> <F8> :set hls<CR>
 nnoremap <silent> <F9> :nohls<CR>
 nnoremap <silent> + :exe "resize " . (winheight(0) * 3/2)<CR>
