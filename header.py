@@ -1,8 +1,8 @@
 #!/usr/bin/python -B
 ################################################################################
-# @Title: header.py 
+# @Title: header.py
 #
-# @Author: Phil Smith 
+# @Author: Phil Smith
 #
 # @Date: 02-Jul-2013	12:05 AM
 #
@@ -10,23 +10,15 @@
 #
 # @Purpose: This script creates standard headers for various file types.
 #           The supported types are: C/C++, FORTRAN, Python, Perl, Tcsh,
-#           Bash and Makefiles. 
-#           This script assumes that any file passed to it does not have a 
+#           Bash and Makefiles.
+#           This script assumes that any file passed to it does not have a
 #           a header and will simply add its payload to the top of the file.
 #           This script is safe to run on existing code in most cases.
-#           In it's current state, the script assumes files are named in the
-#           format: 
-#             NAME.EXT 
-#           If multiple '.' characters are used, the script will fail. E.g.
-#             PREFIX.NAME.EXT = the script will not work.
-# 
+#
 #           Exit Codes:
 #           1  - Unknown Shell passed as --shell/-s argument
-#           10 - File contains no extension and is not a Makefile
 #           11 - File extension is unknown
 #
-# @Modification History: 
-# $Id: header.py,v 1.6 2013/07/27 20:12:31 alpha Exp $
 ###############################################################################
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -36,11 +28,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 ###############################################################################
+import os
+import sys
+import stat
 import argparse
 import subprocess
-import stat
-import sys
-import os
 from datetime import datetime
 from time import strftime, localtime
 
@@ -62,7 +54,11 @@ def main(args):
    # Store the location of the Perl, Python, TCsh and Bash interpreters
    #
    myPerl = subprocess.check_output(['which', 'perl'])[:-1]
-   myTcsh = subprocess.check_output(['which', 'tcsh'])[:-1]
+   try:
+     myTcsh = subprocess.check_output(['which', 'tcsh'])[:-1]
+   except subprocess.CalledProcessError:
+     myTcsh = ("/usr/bin/tcsh\n" +
+     "# tcsh is not installed: using '/usr/bin/tcsh' default.")
    myBash = subprocess.check_output(['which', 'bash'])[:-1]
    myPython = subprocess.check_output(['which', 'python'])[:-1]
    myPython3 = subprocess.check_output(['which', 'python3'])[:-1]
@@ -107,12 +103,12 @@ def main(args):
          print "%s is an unknown shell! Aborting!" % shell
          sys.exit(1)
 
-   
+
    #
    # Process each file
    #
    for file in args.files:
-      
+
       #
       # Determine the target language
       #
@@ -137,7 +133,7 @@ def main(args):
          if os.path.isfile(tempFile):
             print "Removing temp file: %s" % tempFile
             os.remove(tempFile)
-         os.rename(file, tempFile)   
+         os.rename(file, tempFile)
       else:
          tempFile = ''
 
@@ -151,9 +147,9 @@ def main(args):
          mod = mod | stat.S_IROTH | stat.S_IXOTH
          outFile.write("#!" + shells.get(lang)+"\n")
       else:
-         mod = stat.S_IRUSR | stat.S_IWUSR 
-         mod = mod | stat.S_IRGRP | stat.S_IWGRP 
-         mod = mod | stat.S_IROTH 
+         mod = stat.S_IRUSR | stat.S_IWUSR
+         mod = mod | stat.S_IRGRP | stat.S_IWGRP
+         mod = mod | stat.S_IROTH
 
       os.chmod(file, mod)
       openCharSet = []
@@ -215,20 +211,10 @@ def main(args):
       outFile.write( comment + '\n' )
       outFile.write( comment + ' @Purpose:\n')
       outFile.write( comment + '\n' )
-      if not args.mod:
-         #
-         # Split the key out to prevent CVS from storing revisions in this file.
-         #
-         key = 'Id: '
-         outFile.write( comment + ' @Revision:\n') 
-         outFile.write( comment + ' $' + key +'$\n') 
-         outFile.write( comment + '\n' )
-      else:
-         outFile.write( comment + ' @Modification History:\n')
-         outFile.write( comment + '\n' )
+      outFile.write( comment + '\n' )
       print_line(outFile, columns, closeCharSet )
-      
-      
+
+
       #
       # If there was a temp file, copy it's contents back into the new file.
       #
@@ -240,7 +226,7 @@ def main(args):
          os.remove(tempFile)
 
       outFile.close()
-     
+
 #
 # End of main()
 #
@@ -258,21 +244,18 @@ def check_language( file ):
    #   Python3
    #   Tcsh/Bash
    #
-   try:
-      name, rawExt = file.split('.') 
-   except ValueError:
-      #
-      # Makefiles have no extension and will thus always cause this exception.
-      #
-      if file.lower() == 'makefile':
-         return 'makefile'
-      else:
-         print "No file extension found in file name: %s" % file
-         print "Aborting!"
-         sys.exit(10)
+
+   # Makefiles are special
+   if file.lower() == 'makefile':
+     return 'makefile'
+
+   # Get the file name and extension
+   name_data = file.split('.')
+   rawExt = name_data[-1]
+   name = ".".join(name_data)
 
    # Force the extension to lower case for easier matching.
-   ext = rawExt.lower()  
+   ext = rawExt.lower()
    if ext == 'c' or ext == 'cpp' or ext == 'h' or ext == 'hpp':
       return 'c'
    elif ext == 'f' or ext == 'f77' or ext == 'f90' or ext == 'inc' or ext == 'cmn':
@@ -285,9 +268,11 @@ def check_language( file ):
       return 'python3'
    elif ext == 'sh':
       return 'shell'
+   elif ext == 'mak':
+      return 'makefile'
    else:
       print "%s is not a known extension! Aborting!" % ext
-      sys.exit(11) 
+      sys.exit(11)
 #
 # End of check_language
 #
@@ -312,14 +297,14 @@ def set_comment_chars( lang ):
       return ['#','#']
    elif lang == 'makefile':
       return ['#','#']
-    
+
 #
 # End of set_comment_chars
 #
 
 #
 # print_line( file, len, charSet ) - prints one line of length 'len' to
-# the file. 
+# the file.
 #
 def print_line( file, len, charSet ):
    for i in range(0, len):
@@ -460,8 +445,6 @@ if __name__ == "__main__":
    parser.add_argument('-c','--columns', type=int, help='Number of columns in a line')
    parser.add_argument('-p','--project', help='Project name')
    parser.add_argument('-s','--shell', help='Tcsh or Bash shell')
-   parser.add_argument('-m','--mod',  action='store_true',
-                        help='Determines whether to use mod history or revision number')
    parser.add_argument('--bsd',  action='store_true',
                         help='Use the BSD 2 license')
    parser.add_argument('--gpl',  action='store_true',
