@@ -121,13 +121,17 @@ def rename_pics( pic_list, recursive=False, verbose=False ):
     # Perform the renames
     for pic in sorted(pic_list):
 
+      path = op.split(pic)[0]
+
       ext = pic.split('.')[-1].lower()
       new_name = "%s_%02d.%s" % (prefix, sequence, ext)
+      new_name = op.join(path, new_name)
 
       # There is a chance that the script may have already ran,
       # the new name must not conflict with a pre-existing file
       while op.isfile(new_name):
         new_name = "%s_%02d.%s" % (prefix, sequence, ext)
+        new_name = op.join(path, new_name)
         sequence += 1
       if verbose:
         print "%s ==> %s" % (pic, new_name)
