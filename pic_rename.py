@@ -147,38 +147,38 @@ def rename_pics( pic_list, recursive=False, verbose=False ):
 
   for pic in pic_list:
 
-    key = op.split(pic)[0]
+    path = op.split(pic)[0]
 
     # Split the pictures up by their lowest parent directory
     # This ensures that './Pics' and './Foo/Pics' are evaluated separately.
-    if key not in dirs:
+    if path not in dirs:
       files = []
-      dirs[key] = files[:]
-      dirs[key].append(pic)
+      dirs[path] = files[:]
+      dirs[path].append(pic)
     else:
-      dirs[key].append(pic)
+      dirs[path].append(pic)
 
-  for key in dirs:
+  for path in dirs:
     sequence = 0
 
     # Grab the name of the last parent directory
     # Ex. ./foo/bar/baz/qux.jpg => 'baz'
-    prefix = key.split('/')[-1]
+    prefix = path.split('/')[-1]
     if prefix == '.':
       prefix = "image"
 
     # Perform the renames
-    for item in sorted(dirs[key]):
+    for item in sorted(dirs[path]):
 
       ext = item.split('.')[-1].lower()
       new_name = "%s_%02d.%s" % ( prefix, sequence, ext)
-      new_name = op.join( key, new_name )
+      new_name = op.join( path, new_name )
 
       # There is a chance that the script may have already ran,
       # the new name must not conflict with a pre-existing file
       while op.isfile(new_name):
         new_name = "%s_%02d.%s" % (prefix, sequence, ext)
-        new_name = op.join( key, new_name )
+        new_name = op.join( path, new_name )
         sequence += 1
       if verbose:
         print "%s ==> %s" % ( item, new_name )
