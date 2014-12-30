@@ -17,6 +17,7 @@
 import re
 import argparse as ap
 
+
 def main( file_name, args ):
    """
    This is the main point of entry for the script.
@@ -31,14 +32,14 @@ def main( file_name, args ):
    file = open( file_name, 'r')
    for line in file:
 
-     # Read the line data and preserve leading whitespace
+     # Read the line data and preserve leading whitespace.
      written_line = re.search( '(\s*.*)', line )
 
      if written_line:
        file_data.append(written_line.group(1))
    file.close()
 
-   # The close_stacks are a dict of stacks holding close braces.
+   # The close_stacks are a dict of stacks holding close braces
    # The dictionary key is a line number, the associated data is 
    # stack of closing braces. When the line number is reached, 
    # the stack is popped until empty.
@@ -46,7 +47,7 @@ def main( file_name, args ):
    new_file = add_braces( file_data, open_lines, close_stacks )
 
 
-   # Don't overwrite the input file
+   # Don't overwrite the input file.
    if args.prefix:
      file_name = args.prefix + file_name
 
@@ -57,35 +58,40 @@ def main( file_name, args ):
 
 
 def find_keywords( data, limit ):
+   """
+   This function finds Python keywords that require indentation
+   following them. It returns dictionaries marking the start and
+   end blocks.
+   """
 
    # These are the keywords in Python that require indentation
    # following them.
    key_words = 'class if while def else: elif for try except'
    key_words = key_words.split()
 
-   # Queue dict to hold opening braces
+   # Queue dict to hold opening braces.
    openings = {}
 
-   # Stack dict to hold closing indices
+   # Stack dict to hold closing indices.
    closures = {}
 
-   # Find key words ( line number and ending line )
+   # Find key words ( line number and ending line ).
    for index in range(0, len(data)):
 
      line = data[index]
 
-     # Tokenize the line to check for key words
+     # Tokenize the line to check for key words.
      tokens = line.split()
 
-     # Disregard all lines that don't have a keyword
+     # Disregard all lines that don't have a keyword.
      if not tokens:
        continue
 
-     # Found a key word, so grab it's index
+     # Found a key word, so grab it's index.
      if tokens[0] in key_words:
 
-       # Since keyword was found, save opening brace
-       # Also figure out when to close
+       # Since keyword was found, save opening brace.
+       # Also figure out when to close.
        spaces = ws_count( line )
        close_idx = find_closure( index+1, spaces, data )
 
@@ -93,6 +99,8 @@ def find_keywords( data, limit ):
        # which indentation matches the start.
        close_idx -= 1
 
+       # Note: This count will include blank lines preceding the closing
+       #       indentation.
        if close_idx - index >= limit:
 
          # If the gap is large enough, store an opening and closing brace set.
@@ -105,13 +113,18 @@ def find_keywords( data, limit ):
 
    return openings, closures
 
-def add_braces( data, open_lines, close_s ):
+
+def add_braces( file_data, open_lines, close_lines ):
+   """
+   This function adds braces to the file data based on the two line numbers
+   in the two dictionaries passed in.
+   """
 
    new_data = []
 
-   # Write the output
-   for index in range(0, len(data)):
-     line = data[index]
+   # Write the output.
+   for index in range(0, len(file_data)):
+     line = file_data[index]
 
      if line.split():
         new_data.append( line )
@@ -121,24 +134,32 @@ def add_braces( data, open_lines, close_s ):
      if index in open_lines:
        new_data.append( open_lines[index] )
 
-     if index in close_s:
-       for each in reversed(close_s[index]):
+     if index in close_lines:
+       for each in reversed(close_lines[index]):
          new_data.append( each )
    return new_data
 
+
 def find_closure( start, spaces, data ):
+  """
+  This function finds the first line that has matching or less indentation
+  to the block starting at START.
+  """
 
   for index in range( start, len(data)):
 
     line = data[index]
 
-    # Ignore blank lines and comments
+    # Ignore blank lines and comments.
     tokens = line.split()
     if (not tokens) or tokens[0][0] == '#' :
       continue
 
+    # Find the first line to at least match indentation.
     if ws_count( line ) <= spaces:
       return index
+
+  # EOF reached, closure is forced.
   return index+1
 
 
@@ -153,6 +174,7 @@ def ws_count( line ):
      count += 1
    else:
      return count
+
 
 if __name__ == "__main__":
 
