@@ -15,24 +15,22 @@
 #
 ################################################################################
 import re
+import argparse as ap
 
-def main():
+def main( file_name, args ):
    """
    This is the main point of entry for the script.
    """
 
-   LIMIT = 15
-   file_name = "header.py"
-
+   if args.limit:
+     limit = args.limit
+   else:
+     limit = 15
    file_data = []
-
-
-   # List to store index for opening braces
-
 
    file = open( file_name, 'r')
    for line in file:
-     
+
      # Read the line data and preserve leading whitespace
      written_line = re.search( '(\s*.*)', line )
 
@@ -44,15 +42,19 @@ def main():
    # The dictionary key is a line number, the associated data is 
    # stack of closing braces. When the line number is reached, 
    # the stack is popped until empty.
-   open_lines, close_stacks = find_keywords( file_data, LIMIT )
+   open_lines, close_stacks = find_keywords( file_data, limit )
    new_file = add_braces( file_data, open_lines, close_stacks )
 
-   file_name = "braced_" + file_name
+
+   # Don't overwrite the input file
+   if args.prefix:
+     file_name = args.prefix + file_name
+
    file = open( file_name, 'w')
    for line in new_file:
      file.write( line + "\n" )
    file.close()
- 
+
 
 def find_keywords( data, limit ):
 
@@ -86,7 +88,7 @@ def find_keywords( data, limit ):
        # Also figure out when to close
        spaces = ws_count( line )
        close_idx = find_closure( index+1, spaces, data )
-       
+
        # The brace closing brace should be written BEFORE the line on
        # which indentation matches the start.
        close_idx -= 1
@@ -110,7 +112,7 @@ def add_braces( data, open_lines, close_s ):
    # Write the output
    for index in range(0, len(data)):
      line = data[index]
-     
+
      if line.split():
         new_data.append( line )
      else:
@@ -129,7 +131,7 @@ def find_closure( start, spaces, data ):
   for index in range( start, len(data)):
 
     line = data[index]
-    
+
     # Ignore blank lines
     if not line.split():
       continue
@@ -152,4 +154,19 @@ def ws_count( line ):
      return count
 
 if __name__ == "__main__":
-  main()
+
+  descStr = """
+  This script adds braces to Python indented blocks to make code folding
+  in Vim a little easier.
+  """
+
+  parser = ap.ArgumentParser( description=descStr) 
+  limitStr = "How many lines must be in an indented block to add braces"
+  parser.add_argument('-l', '--limit', type=int, help=limitStr)
+  parser.add_argument('-p', '--prefix',
+                       help="Optional prefix to add to file names")
+  parser.add_argument('files', nargs='+', help='Files to be processed')
+  args = parser.parse_args()
+
+  for file_name in args.files:
+    main( file_name, args )
