@@ -26,19 +26,9 @@ def main():
 
    file_data = []
 
-   # Queue to hold opening braces
-   key_queue = []
-
-   # Stack to hold closing braces
-   key_stack = []
 
    # List to store index for opening braces
-   open_idx = []
-   close_idx = []
-   closures = {}
 
-   key_words = 'class if while def else: elif for'
-   key_words = key_words.split()
 
    file = open( file_name, 'r')
    for line in file:
@@ -50,55 +40,89 @@ def main():
        file_data.append(written_line.group(1))
    file.close()
 
-   # First pass, find key words ( line number and ending line )
-   for index in range(0, len(file_data)):
+   # The close_stacks are a dict of stacks holding close braces.
+   # The dictionary key is a line number, the associated data is 
+   # stack of closing braces. When the line number is reached, 
+   # the stack is popped until empty.
+   open_lines, close_stacks = find_keywords( file_data, LIMIT )
+   new_file = add_braces( file_data, open_lines, close_stacks )
 
-     line = file_data[index]
+   file_name = "braced_" + file_name
+   file = open( file_name, 'w')
+   for line in new_file:
+     file.write( line + "\n" )
+   file.close()
+ 
+
+def find_keywords( data, limit ):
+
+   # These are the keywords in Python that require indentation
+   # following them.
+   key_words = 'class if while def else: elif for try except'
+   key_words = key_words.split()
+
+   # Queue dict to hold opening braces
+   openings = {}
+
+   # Stack dict to hold closing indices
+   closures = {}
+
+   # Find key words ( line number and ending line )
+   for index in range(0, len(data)):
+
+     line = data[index]
 
      # Tokenize the line to check for key words
      tokens = line.split()
+
+     # Disregard all lines that don't have a keyword
      if not tokens:
        continue
 
      # Found a key word, so grab it's index
      if tokens[0] in key_words:
-       
 
        # Since keyword was found, save opening brace
        # Also figure out when to close
        spaces = ws_count( line )
-       closing = find_closure( index+1, spaces, file_data )
-       closing -= 1
-       if closing - index >= LIMIT:
-         key_queue.append( "%s# %s {" %( " "*spaces, tokens[0]))
-         if closing not in closures:
-           closures[closing] = []
-           closures[closing].append( "%s# } %s "  % ( " "*spaces, tokens[0]))
+       close_idx = find_closure( index+1, spaces, data )
+       
+       # The brace closing brace should be written BEFORE the line on
+       # which indentation matches the start.
+       close_idx -= 1
+
+       if close_idx - index >= limit:
+
+         # If the gap is large enough, store an opening and closing brace set.
+         openings[index] = "%s# %s {" %( " "*spaces, tokens[0])
+         if close_idx not in closures:
+           closures[close_idx] = []
+           closures[close_idx].append( "%s# } %s "  % ( " "*spaces, tokens[0]))
          else:
-           closures[closing].append( "%s# } %s "  % ( " "*spaces, tokens[0]))
+           closures[close_idx].append( "%s# } %s "  % ( " "*spaces, tokens[0]))
 
-         # if the gap is large enough, store opening and closing indices
-         # so queue and stack know when to print
-         open_idx.append( index )
+   return openings, closures
 
-   # Second pass - write the output
-   for index in range(0, len(file_data)):
-     line = file_data[index]
+def add_braces( data, open_lines, close_s ):
+
+   new_data = []
+
+   # Write the output
+   for index in range(0, len(data)):
+     line = data[index]
      
      if line.split():
-        print line
+        new_data.append( line )
      else:
-        print ""
+        new_data.append( "" )
 
-     if index in open_idx:
-       print key_queue.pop(0)
+     if index in open_lines:
+       new_data.append( open_lines[index] )
 
-     if index in closures:
-       for each in reversed(closures[index]):
-         print each
-
-   for remaining in reversed(key_stack):
-     print remaining
+     if index in close_s:
+       for each in reversed(close_s[index]):
+         new_data.append( each )
+   return new_data
 
 def find_closure( start, spaces, data ):
 
@@ -113,10 +137,6 @@ def find_closure( start, spaces, data ):
     if ws_count( line ) <= spaces:
       return index
   return index+1
-#       for each in range( index, len(file_data)):
-#         if ws_count( file_data[each] ) == spaces:
-#           return each
-  
 
 
 def ws_count( line ):
@@ -130,5 +150,6 @@ def ws_count( line ):
      count += 1
    else:
      return count
+
 if __name__ == "__main__":
   main()
