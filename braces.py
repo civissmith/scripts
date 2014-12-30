@@ -132,8 +132,9 @@ def find_closure( start, spaces, data ):
 
     line = data[index]
 
-    # Ignore blank lines
-    if not line.split():
+    # Ignore blank lines and comments
+    tokens = line.split()
+    if (not tokens) or tokens[0][0] == '#' :
       continue
 
     if ws_count( line ) <= spaces:
