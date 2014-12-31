@@ -28,6 +28,7 @@
 #
 ################################################################################
 import os
+import signal
 import os.path as op
 import hashlib as hl
 import argparse as ap
@@ -183,8 +184,15 @@ def run( args ):
   report_duplicates( duplicates, args.script )
 
 
+def handle_sigint(sig_num, frame):
+
+  print("\nQuitting...")
+  exit(0)
+
+
 if __name__ == "__main__":
 
+  signal.signal( signal.SIGINT, handle_sigint )
   desc_str = """
   Search the file tree rooted at PATH for duplicate files of type KIND. If the SCRIPT
   argument is set, create a script file (rmscript.sh) that can be run to delete duplicates.
