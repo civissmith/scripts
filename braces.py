@@ -14,6 +14,20 @@
 #
 #
 ################################################################################
+################################################################################
+# Usage:
+# To use the folding with these markers. Set the fold method to manual:
+#
+# <vim>
+# :set foldmethod=manual
+#
+# Move cursor to highlight the opening curly brace and type the following
+# command in normal mode:
+#
+# zfa}
+#
+# The code will fold to the closing curly brace that matches.
+################################################################################
 import re
 import argparse as ap
 
