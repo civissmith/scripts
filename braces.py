@@ -29,6 +29,8 @@
 # The code will fold to the closing curly brace that matches.
 ################################################################################
 import re
+import os
+import stat
 import argparse as ap
 
 
@@ -63,12 +65,17 @@ def main( file_name, args ):
 
    # Don't overwrite the input file.
    if args.prefix:
+     old_perms = os.stat(file_name)
      file_name = args.prefix + file_name
 
    file = open( file_name, 'w')
    for line in new_file:
      file.write( line + "\n" )
    file.close()
+   
+   # Change the mode of new files to match the original 
+   if args.prefix:
+     os.chmod( file_name, old_perms.st_mode )
 
 
 def find_keywords( data, limit ):
