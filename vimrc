@@ -105,6 +105,9 @@ set confirm
 "
 nnoremap <silent> <C-S-K> :set cursorcolumn!<cr>
 nnoremap <silent> <C-S-L> :set cursorline!<cr>
+" Switch back to insert mode if already in insert
+inoremap <silent> <C-S-K> <esc>:set cursorcolumn!<cr>a
+inoremap <silent> <C-S-L> <esc>:set cursorline!<cr>a
 
 
 "
@@ -113,9 +116,15 @@ nnoremap <silent> <C-S-L> :set cursorline!<cr>
 "
 nnoremap <silent> <F4> :vsplit<CR>
 nnoremap <silent> <S-F5> :split<CR>
+" Switch back to insert mode if already in insert
+inoremap <silent> <F4> <esc>:vsplit<CR>a
+inoremap <silent> <S-F5> <esc>:split<CR>a
 
 " Fast buffer switching
 nnoremap <silent> <F5> :buffers!<CR>:buffer<Space>
+" No need to go back to insert since we might switch buffer
+inoremap <silent> <F5> <esc>:buffers!<CR>:buffer<Space>
+
 "
 " Set relativenumber to give lines-from-current instead of absolute
 " (>= Vim 7.3)
@@ -132,6 +141,12 @@ nnoremap <silent> <S-Left> <C-w>h
 nnoremap <silent> <S-Right> <C-w>l
 
 
+" Switch back to insert mode if already in insert
+inoremap <silent> <F6> <esc>:set nu!<CR>a
+inoremap <silent> <F7> <esc>:set relativenumber!<CR>a
+inoremap <silent> <F8> <esc>:set hls<CR>a
+inoremap <silent> <F9> <esc>:nohls<CR>a
+
 "
 " Create a file type and preference set for personal "note" files.
 "
@@ -142,9 +157,10 @@ au BufNewFile,BufRead  *.note colorscheme delek
 " Setup environment for Python Files
 "
 au BufNewFile,BufRead  *.py :set expandtab ts=2 sw=2 sts=2
-au BufNewFile,BufRead  *.py :set foldmethod=indent foldlevel=99
+au BufNewFile,BufRead  *.py :set foldmethod=manual
 au BufNewFile,BufRead  *.py :so ~/.vim/plugin/RainbowParenthsis.vim
 au BufNewFile,BufRead  *.py3 :set expandtab ts=2 sw=2 sts=2
+au BufNewFile,BufRead  *.py3 :set foldmethod=manual
 au BufNewFile,BufRead  *.py3 :so ~/.vim/plugin/RainbowParenthsis.vim
 
 "
