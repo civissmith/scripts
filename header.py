@@ -133,6 +133,12 @@ def main(args):
       if lang == 'shell':
          lang = shell.lower()
 
+      #
+      # Remove the '3' from Python3 modules so import still works
+      #
+      if lang == 'python3':
+         file = file[:-1]
+
       commentChar = set_comment_chars(lang)
 
       #
