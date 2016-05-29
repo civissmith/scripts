@@ -112,7 +112,12 @@ def run(args):
         if lang == 'python3':
             file_ = file_[:-1]
 
-        commentChar = set_comment_chars(lang)
+        try:
+            commentChar = set_comment_chars(lang)
+        except KeyError:
+            # A key error was likely caused by an unknown language. Skip that
+            # file and attempt to carry on.
+            continue
 
         # Check to see if the file exists
         if os.path.isfile(file_):
@@ -240,6 +245,7 @@ def check_language( file_ ):
                      'cpp' :'c',
                      'h'   :'c',
                      'hpp' :'c',
+                     'java':'java',
                      'f'   :'fortran',
                      'f77' :'fortran',
                      'f90' :'fortran',
@@ -269,24 +275,25 @@ def check_language( file_ ):
 def set_comment_chars( lang ):
 #{
     """
-    Returns the comment character for the given language.
+    Returns the comment character for the given language. Raises a KeyError if
+    the given language is not known.
     """
-    if lang == 'c':
-        return ['/','*']
-    elif lang == 'fortran':
-        return ['!','*']
-    elif lang == 'perl':
-        return ['#','#']
-    elif lang == 'python':
-        return ['#','#']
-    elif lang == 'python3':
-        return ['#','#']
-    elif lang == 'tcsh':
-        return ['#','#']
-    elif lang == 'bash':
-        return ['#','#']
-    elif lang == 'makefile':
-        return ['#','#']
+    comment_chars = { 'c'       : ['/','*'],
+                      'java'    : ['/', '*'],
+                      'fortran' : ['!', '*'],
+                      'python'  : ['#', '#'],
+                      'python3' : ['#', '#'],
+                      'tcsh'    : ['#', '#'],
+                      'bash'    : ['#', '#'],
+                      'makefile': ['#', '#'],
+                      'perl'    : ['#', '#'],
+                    }
+    try:
+        return comment_chars[lang]
+    except KeyError:
+        # Print out that an error was encountered, then re-raise the exception
+        sys.stderr.write("Error: '{0}' is an unknown language type.\n".format(lang))
+        raise
 
 #} End of set_comment_chars
 
