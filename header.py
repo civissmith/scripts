@@ -59,6 +59,28 @@ shaBang = [ 'python',
             'bash' ]
 
 
+def get_shell_locations(shells):
+#{
+    """
+    Given a list of shells, returns a dict whose keys are shells and values are
+    the locations of the shell in the file system. If a shell is not installed,
+    a filler location will be used.
+    """
+
+    locations = {}
+    # Check to make sure shells are available and store locations (if present).
+    # A missing shell is only a problem if any input file is of that type.
+    for shell in shells:
+        try:
+            location = subprocess.check_output(['which', shell])[:-1]
+        except subprocess.CalledProcessError:
+            location = "/usr/bin/env {0}".format(shell)
+        if shell not in locations:
+            locations[shell] = location
+
+    return locations
+#} End of get_shell_locations()
+
 def run(args):
 
     """
@@ -67,32 +89,8 @@ def run(args):
 
     commentChar = []
 
-    #
-    # Store the location of the Perl, Python, TCsh and Bash interpreters
-    #
-    myPerl = subprocess.check_output(['which', 'perl'])[:-1]
-    try:
-        myTcsh = subprocess.check_output(['which', 'tcsh'])[:-1]
-    except subprocess.CalledProcessError:
-        myTcsh = ("/usr/bin/tcsh\n" +
-        "# tcsh is not installed: using '/usr/bin/tcsh' default.")
-    myBash = subprocess.check_output(['which', 'bash'])[:-1]
-    myPython = subprocess.check_output(['which', 'python'])[:-1]
-    myPython3 = subprocess.check_output(['which', 'python3'])[:-1]
-    # Stop Python from making .pyc files
-    if sys.version_info >= (2,7,4):
-        myPython = myPython + ' -B'
-    myPython3 = myPython3 + ' -B'
-    #
-    # The keys are valid values of lang (filled below), the lookup results
-    # in the script finding the installed location of the shell interpeter.
-    #
-    shells = { 'python' : myPython,
-               'python3': myPython3,
-               'perl'   : myPerl,
-               'tcsh'   : myTcsh,
-               'bash'   : myBash }
-
+    shells = ['python', 'python3','perl', 'tcsh', 'bash']
+    shell_locations = get_shell_locations(shells)
 
     #
     # Check for args that can be defaulted.
@@ -167,7 +165,7 @@ def run(args):
             mod = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
             mod = mod | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
             mod = mod | stat.S_IROTH | stat.S_IXOTH
-            outFile.write("#!" + shells.get(lang)+"\n")
+            outFile.write("#!" + shell_locations.get(lang)+"\n")
         else:
             mod = stat.S_IRUSR | stat.S_IWUSR
             mod = mod | stat.S_IRGRP | stat.S_IWGRP
