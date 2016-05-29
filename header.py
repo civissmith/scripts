@@ -49,15 +49,6 @@ import subprocess
 from datetime import datetime
 from time import strftime, localtime
 
-#
-# shaBang list of file types that need a shabang (#!) line.
-#
-shaBang = [ 'python',
-            'python3',
-            'perl',
-            'tcsh',
-            'bash' ]
-
 
 def get_shell_locations(shells):
 #{
@@ -89,34 +80,14 @@ def run(args):
 
     commentChar = []
 
-    shells = ['python', 'python3','perl', 'tcsh', 'bash']
-    shell_locations = get_shell_locations(shells)
+    known_shells = ['python', 'python3','perl', 'tcsh', 'bash']
+    shell_locations = get_shell_locations(known_shells)
 
-    #
-    # Check for args that can be defaulted.
-    #
-    if not args.author:
-        author = "Phil Smith"
-    else:
-        author = args.author
 
-    if not args.columns:
-        columns = 80
-    else:
-        columns = args.columns
-
-    if not args.project:
-        project = ''
-    else:
-        project = args.project
-
-    if not args.shell:
-        shell = 'tcsh'
-    else:
-        shell = args.shell.lower()
-        if shell not in shaBang:
-            print "%s is an unknown shell! Aborting!" % shell
-            sys.exit(1)
+    shell = args.shell.lower()
+    if shell not in known_shells:
+        print('"{0}" is an unknown shell. Aborting.'.format(shell))
+        exit(1)
 
     #
     # Process each file
@@ -161,7 +132,7 @@ def run(args):
         #
         # Start filling the file
         #
-        if lang in shaBang:
+        if lang in known_shells:
             mod = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
             mod = mod | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
             mod = mod | stat.S_IROTH | stat.S_IXOTH
@@ -204,35 +175,35 @@ def run(args):
         # Print the license agreement, if selected
         #
         if args.apache:
-            print_line(outFile, columns, openCharSet )
-            print_apache( outFile, comment, author )
-            print_line(outFile, columns, closeCharSet )
+            print_line(outFile, args.columns, openCharSet )
+            print_apache( outFile, comment, args.author )
+            print_line(outFile, args.columns, closeCharSet )
         elif args.bsd:
-            print_line(outFile, columns, openCharSet )
-            print_bsd2( outFile, comment,  author )
-            print_line(outFile, columns, closeCharSet )
+            print_line(outFile, args.columns, openCharSet )
+            print_bsd2( outFile, comment,  args.author )
+            print_line(outFile, args.columns, closeCharSet )
         elif args.gpl:
-            print_line(outFile, columns, openCharSet )
-            print_gpl3( outFile, comment,  author )
-            print_line(outFile, columns, closeCharSet )
+            print_line(outFile, args.columns, openCharSet )
+            print_gpl3( outFile, comment,  args.author )
+            print_line(outFile, args.columns, closeCharSet )
         elif args.mit:
-            print_line(outFile, columns, openCharSet )
-            print_mit( outFile, comment, author )
-            print_line(outFile, columns, closeCharSet )
+            print_line(outFile, args.columns, openCharSet )
+            print_mit( outFile, comment, args.author )
+            print_line(outFile, args.columns, closeCharSet )
 
-        print_line(outFile, columns, openCharSet )
+        print_line(outFile, args.columns, openCharSet )
         outFile.write( comment + ' @Title: ' + file + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' @Author: ' + author + '\n')
+        outFile.write( comment + ' @Author: ' + args.author + '\n')
         outFile.write( comment + '\n' )
         outFile.write( comment + ' @Date: ' + strftime("%a, %d-%b-%y %I:%M%p", localtime()) + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' @Project: ' + project + '\n')
+        outFile.write( comment + ' @Project: ' + args.project + '\n')
         outFile.write( comment + '\n' )
         outFile.write( comment + ' @Purpose:\n')
         outFile.write( comment + '\n' )
         outFile.write( comment + '\n' )
-        print_line(outFile, columns, closeCharSet )
+        print_line(outFile, args.columns, closeCharSet )
 
 
         #
@@ -439,10 +410,13 @@ if __name__ == "__main__":
     existing content."""
     progName = sys.argv[0]
     parser = argparse.ArgumentParser(prog=progName ,description=descStr)
-    parser.add_argument('-a','--author', help='Author of the files')
-    parser.add_argument('-c','--columns', type=int, help='Number of columns in a line')
-    parser.add_argument('-p','--project', help='Project name')
-    parser.add_argument('-s','--shell', help='Tcsh or Bash shell')
+    parser.add_argument('-a','--author',default="Phil Smith",
+                        help='Author of the files')
+    parser.add_argument('-c','--columns',default=80, type=int,
+                        help='Number of columns in a line')
+    parser.add_argument('-p','--project',default="", help='Project name')
+    parser.add_argument('-s','--shell',default="bash",
+                        help='Tcsh or Bash shell')
     parser.add_argument('--bsd',  action='store_true',
                          help='Use the BSD 2 license')
     parser.add_argument('--gpl',  action='store_true',
