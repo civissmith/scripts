@@ -95,32 +95,24 @@ def run(args):
     #
     for file_ in args.files:
 
-        #
         # Determine the target language
-        #
         lang = check_language(file_)
 
-        #
-        # A correction is needed to determine which basic shell is requested
-        #
+        # If the language was a shell, then get the proper name of that shell 
+        # from the command line argument.
         if lang == 'shell':
             lang = shell.lower()
 
-        #
         # Remove the '3' from Python3 modules so import still works
-        #
         if lang == 'python3':
             file_ = file_[:-1]
 
         commentChar = set_comment_chars(lang)
 
-        #
         # Check to see if the file exists
-        #
         if os.path.isfile(file_):
-            #
+
             # If the file already exists, move it out of the way temporarily
-            #
             tempFile = '.' + file_ + '.tmp'
             if os.path.isfile(tempFile):
                 print "Removing temp file: %s" % tempFile
@@ -129,10 +121,11 @@ def run(args):
         else:
             tempFile = ''
 
-        outFile = open(file_, 'w')
+
         #
         # Start filling the file
         #
+        outFile = open(file_, 'w')
         if lang in known_shells:
             mod = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
             mod = mod | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
@@ -193,15 +186,15 @@ def run(args):
             print_line(outFile, args.columns, closeCharSet )
 
         print_line(outFile, args.columns, openCharSet )
-        outFile.write( comment + ' @Title: ' + file_ + '\n')
+        outFile.write( comment + ' >Title: ' + file_ + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' @Author: ' + args.author + '\n')
+        outFile.write( comment + ' >Author: ' + args.author + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' @Date: ' + strftime("%a, %d-%b-%y %I:%M%p", localtime()) + '\n')
+        outFile.write( comment + ' >Date: ' + strftime("%a, %d-%b-%y %I:%M%p", localtime()) + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' @Project: ' + args.project + '\n')
+        outFile.write( comment + ' >Project: ' + args.project + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' @Purpose:\n')
+        outFile.write( comment + ' >Purpose:\n')
         outFile.write( comment + '\n' )
         outFile.write( comment + '\n' )
         print_line(outFile, args.columns, closeCharSet )
@@ -220,6 +213,7 @@ def run(args):
         outFile.close()
 
 # } End of run()
+
 
 def check_language( file_ ):
 #{
