@@ -131,7 +131,6 @@ def run(args):
         else:
             tempFile = ''
 
-
         #
         # Start filling the file
         #
@@ -163,6 +162,10 @@ def run(args):
             closeCharSet.append( commentChar[1] )
             closeCharSet.append( commentChar[0] )
             comment = commentChar[1]
+
+        if lang == "java":
+            # Java syntax highlighers don't like 80 character "*" strings
+            args.columns = 3
 
         #
         # The header will contain the following elements:
@@ -196,15 +199,15 @@ def run(args):
             print_line(outFile, args.columns, closeCharSet )
 
         print_line(outFile, args.columns, openCharSet )
-        outFile.write( comment + ' >Title: ' + file_ + '\n')
+        outFile.write( comment + ' @Title: ' + file_ + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' >Author: ' + args.author + '\n')
+        outFile.write( comment + ' @Author: ' + args.author + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' >Date: ' + strftime("%a, %d-%b-%y %I:%M%p", localtime()) + '\n')
+        outFile.write( comment + ' @Date: ' + strftime("%a, %d-%b-%y %I:%M%p", localtime()) + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' >Project: ' + args.project + '\n')
+        outFile.write( comment + ' @Project: ' + args.project + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' >Purpose:\n')
+        outFile.write( comment + ' @Purpose:\n')
         outFile.write( comment + '\n' )
         outFile.write( comment + '\n' )
         print_line(outFile, args.columns, closeCharSet )
