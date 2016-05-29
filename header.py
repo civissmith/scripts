@@ -96,7 +96,12 @@ def run(args):
     for file_ in args.files:
 
         # Determine the target language
-        lang = check_language(file_)
+        try:
+            lang = check_language(file_)
+        except KeyError:
+            # A key error was likely caused by an unknown extension. Skip that
+            # file and attempt to carry on.
+            continue
 
         # If the language was a shell, then get the proper name of that shell 
         # from the command line argument.
@@ -218,7 +223,8 @@ def run(args):
 def check_language( file_ ):
 #{
     """
-    Determines the language of the file that will be created and returns it to the caller.
+    Determines the language of the file that will be created and returns it to
+    the caller. Can raise KeyErrors if an input file has an unknown extension.
     """
 
     # Makefiles are special
@@ -227,28 +233,36 @@ def check_language( file_ ):
 
     # Get the file name and extension
     name_data = file_.split('.')
-    rawExt = name_data[-1]
+    extension = name_data[-1].lower()
     name = ".".join(name_data)
 
-    # Force the extension to lower case for easier matching.
-    ext = rawExt.lower()
-    if ext == 'c' or ext == 'cpp' or ext == 'h' or ext == 'hpp':
-        return 'c'
-    elif ext == 'f' or ext == 'f77' or ext == 'f90' or ext == 'inc' or ext == 'cmn':
-        return 'fortran'
-    elif ext == 'pl' or ext == 'p':
-        return 'perl'
-    elif ext == 'py':
-        return 'python'
-    elif ext == 'py3':
-        return 'python3'
-    elif ext == 'sh':
-        return 'shell'
-    elif ext == 'mak':
-        return 'makefile'
-    else:
-        print "%s is not a known extension! Aborting!" % ext
-        sys.exit(11)
+    language_map = { 'c'   :'c',
+                     'cpp' :'c',
+                     'h'   :'c',
+                     'hpp' :'c',
+                     'f'   :'fortran',
+                     'f77' :'fortran',
+                     'f90' :'fortran',
+                     'inc' :'fortran',
+                     'cmn' :'fortran',
+                     'pl'  :'perl',
+                     'pm'  :'perl',
+                     't'   :'perl',
+                     'pod' :'perl',
+                     'py'  :'python',
+                     'py3' :'python3',
+                     'sh'  :'shell',
+                     'bash':'shell',
+                     'tcsh':'shell',
+                     'mak' :'makefile',
+                     'make':'makefile',
+                   }
+    try:
+        return language_map[extension]
+    except KeyError:
+        # Print out that an error was encountered, then re-raise the exception
+        sys.stderr.write("Error: '{0}' has an unknown file extension.\n".format(file_))
+        raise
 
 #} End of check_language
 
