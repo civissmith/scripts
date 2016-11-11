@@ -205,7 +205,10 @@ def run(args):
         outFile.write( comment + '\n' )
         outFile.write( comment + ' @Date: ' + strftime("%a, %d-%b-%y %I:%M%p", localtime()) + '\n')
         outFile.write( comment + '\n' )
-        outFile.write( comment + ' @Project: ' + args.project + '\n')
+        if args.project:
+            outFile.write( comment + ' @Project: ' + args.project + '\n')
+        else:
+            outFile.write( comment + ' @Project:\n')
         outFile.write( comment + '\n' )
         outFile.write( comment + ' @Purpose:\n')
         outFile.write( comment + '\n' )
