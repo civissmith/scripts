@@ -25,6 +25,8 @@ sudo apt-get install -y neovim
 sudo apt-get install -y python-dev python-pip python3-dev python3-pip
 
 # Install the python modules for neovim
+sudo pip2 install --upgrade pip
+sudo pip3 install --upgrade pip
 sudo pip2 install --upgrade setuptools
 sudo pip3 install --upgrade setuptools
 sudo pip2 install --upgrade neovim
